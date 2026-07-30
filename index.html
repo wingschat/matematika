@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Математика до 100</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-top:#eef1ff;
+    --bg-bottom:#f7f9ff;
+    --surface:#ffffff;
+    --ink:#1e2246;
+    --ink-soft:#6b7099;
+    --accent:#5b5fef;
+    --accent-soft:#e7e8fd;
+    --success:#22b07d;
+    --success-soft:#e2f7ee;
+    --error:#f0605c;
+    --error-soft:#fdeaea;
+    --operator:#ffb020;
+    --line:#e4e6f7;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:
+      radial-gradient(circle at 50% 0%, var(--bg-top), var(--bg-bottom) 70%);
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    -webkit-tap-highlight-color:transparent;
+    overscroll-behavior:none;
+  }
+
+  body{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:20px;
+  }
+
+  .app{
+    width:100%;
+    max-width:420px;
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+  }
+
+  /* ---------- Header ---------- */
+  .header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+
+  .brand{
+    display:flex;
+    flex-direction:column;
+    line-height:1.1;
+  }
+
+  .brand .eyebrow{
+    font-size:12px;
+    font-weight:600;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+  }
+
+  .brand h1{
+    font-family:'Fredoka', sans-serif;
+    font-size:24px;
+    font-weight:600;
+    margin:2px 0 0 0;
+  }
+
+  .streak{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    background:var(--surface);
+    border-radius:999px;
+    padding:8px 14px;
+    box-shadow:0 2px 10px rgba(30,34,70,0.06);
+    font-weight:600;
+    font-size:14px;
+  }
+
+  .streak .flame{
+    font-size:16px;
+  }
+
+  .mode-switch{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    background:var(--surface);
+    border-radius:20px;
+    padding:6px;
+    box-shadow:0 2px 10px rgba(30,34,70,0.06);
+    gap:6px;
+  }
+
+  .mode-btn{
+    border:none;
+    background:transparent;
+    color:var(--ink-soft);
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:600;
+    padding:10px 8px;
+    border-radius:14px;
+    transition:background .15s ease, color .15s ease;
+  }
+
+  .mode-btn.active{
+    background:var(--accent);
+    color:#fff;
+  }
+
+  .mode-btn:not(.active):active{
+    background:var(--accent-soft);
+  }
+
+  /* ---------- Problem card ---------- */
+  .card{
+    background:var(--surface);
+    border-radius:28px;
+    padding:32px 24px 26px;
+    box-shadow:0 10px 30px rgba(30,34,70,0.08);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:20px;
+    position:relative;
+    overflow:hidden;
+  }
+
+  .problem{
+    font-family:'Fredoka', sans-serif;
+    font-weight:600;
+    font-size:52px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    color:var(--ink);
+    user-select:none;
+  }
+
+  .problem .op{
+    color:var(--operator);
+  }
+
+  .problem .eq{
+    color:var(--ink-soft);
+  }
+
+  .word-text{
+    font-family:'Inter', sans-serif;
+    font-size:17px;
+    font-weight:500;
+    line-height:1.55;
+    color:var(--ink);
+    text-align:center;
+    margin:0;
+    padding:0 6px;
+  }
+
+  .hidden{
+    display:none !important;
+  }
+
+  .stage-label{
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:0.04em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    margin-bottom:-8px;
+  }
+
+  .setup-box{
+    min-height:56px;
+    min-width:140px;
+    border-radius:16px;
+    border:2.5px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Fredoka', sans-serif;
+    font-size:24px;
+    font-weight:600;
+    color:var(--accent);
+    padding:0 16px;
+    white-space:nowrap;
+    transition:border-color .15s ease, background .15s ease;
+  }
+
+  .setup-box.filled{
+    border-color:var(--accent);
+    background:var(--accent-soft);
+  }
+
+  .setup-box.correct{
+    border-color:var(--success);
+    background:var(--success-soft);
+    color:var(--success);
+    animation:pop .3s ease;
+  }
+
+  .setup-box.wrong{
+    border-color:var(--error);
+    background:var(--error-soft);
+    color:var(--error);
+    animation:shake .35s ease;
+  }
+
+  .op-row{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px;
+    margin-bottom:2px;
+  }
+
+  .op-key{
+    color:var(--operator);
+    font-size:24px;
+  }
+
+  .answer-box{
+    min-width:76px;
+    height:64px;
+    border-radius:16px;
+    border:2.5px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Fredoka', sans-serif;
+    font-size:38px;
+    font-weight:600;
+    color:var(--accent);
+    padding:0 10px;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+
+  .answer-box.filled{
+    border-color:var(--accent);
+    background:var(--accent-soft);
+  }
+
+  .answer-box.correct{
+    border-color:var(--success);
+    background:var(--success-soft);
+    color:var(--success);
+    animation:pop .3s ease;
+  }
+
+  .answer-box.wrong{
+    border-color:var(--error);
+    background:var(--error-soft);
+    color:var(--error);
+    animation:shake .35s ease;
+  }
+
+  @keyframes pop{
+    0%{ transform:scale(1); }
+    40%{ transform:scale(1.12); }
+    100%{ transform:scale(1); }
+  }
+
+  @keyframes shake{
+    0%,100%{ transform:translateX(0); }
+    25%{ transform:translateX(-6px); }
+    75%{ transform:translateX(6px); }
+  }
+
+  .feedback{
+    min-height:22px;
+    font-size:14px;
+    font-weight:600;
+    letter-spacing:0.01em;
+  }
+
+  .feedback.correct{ color:var(--success); }
+  .feedback.wrong{ color:var(--error); }
+
+  .hint-row{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    min-height:20px;
+  }
+
+  .hint-btn{
+    background:none;
+    border:none;
+    color:var(--ink-soft);
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:5px;
+    padding:6px 10px;
+    border-radius:999px;
+    transition:background .12s ease, color .12s ease;
+  }
+
+  .hint-btn:active{
+    background:var(--accent-soft);
+  }
+
+  .hint-btn:disabled{
+    opacity:0.4;
+  }
+
+  .hint-text{
+    font-size:13px;
+    font-weight:600;
+    color:var(--accent);
+    background:var(--accent-soft);
+    border-radius:12px;
+    padding:8px 14px;
+    text-align:center;
+    max-width:280px;
+    opacity:0;
+    transform:translateY(-4px);
+    transition:opacity .2s ease, transform .2s ease;
+  }
+
+  .hint-text.show{
+    opacity:1;
+    transform:translateY(0);
+  }
+
+  /* ---------- Keypad ---------- */
+  .keypad{
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:10px;
+  }
+
+  .key{
+    background:var(--surface);
+    border:none;
+    border-radius:16px;
+    height:58px;
+    font-family:'Fredoka', sans-serif;
+    font-size:22px;
+    font-weight:600;
+    color:var(--ink);
+    box-shadow:0 2px 8px rgba(30,34,70,0.06);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:transform .08s ease, background .12s ease;
+  }
+
+  .key:active{
+    transform:scale(0.94);
+    background:var(--accent-soft);
+  }
+
+  .key.wide{
+    grid-column:span 1;
+  }
+
+  .key.check{
+    background:var(--accent);
+    color:#fff;
+    font-family:'Inter', sans-serif;
+    font-size:15px;
+    font-weight:700;
+    letter-spacing:0.02em;
+  }
+
+  .key.check:active{
+    background:#4a4dd6;
+  }
+
+  .key.clear{
+    color:var(--ink-soft);
+    font-size:18px;
+  }
+
+  /* ---------- Number line (signature element) ---------- */
+  .numberline-wrap{
+    background:var(--surface);
+    border-radius:22px;
+    padding:18px 20px 16px;
+    box-shadow:0 4px 16px rgba(30,34,70,0.06);
+  }
+
+  .numberline-label{
+    display:flex;
+    justify-content:space-between;
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-soft);
+    margin-bottom:10px;
+  }
+
+  .numberline-label .score{
+    color:var(--accent);
+    font-weight:700;
+  }
+
+  .numberline{
+    position:relative;
+    height:28px;
+  }
+
+  .numberline .track{
+    position:absolute;
+    top:12px;
+    left:0;
+    right:0;
+    height:4px;
+    background:var(--line);
+    border-radius:4px;
+  }
+
+  .numberline .fill{
+    position:absolute;
+    top:12px;
+    left:0;
+    height:4px;
+    background:linear-gradient(90deg, var(--accent), var(--success));
+    border-radius:4px;
+    transition:width .5s cubic-bezier(.4,1.4,.6,1);
+  }
+
+  .numberline .marker{
+    position:absolute;
+    top:0;
+    width:28px;
+    height:28px;
+    margin-left:-14px;
+    border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 3px 8px rgba(91,95,239,0.4);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:13px;
+    color:#fff;
+    font-weight:700;
+    transition:left .5s cubic-bezier(.4,1.4,.6,1);
+  }
+
+  .ticks{
+    display:flex;
+    justify-content:space-between;
+    margin-top:4px;
+    font-size:10px;
+    color:var(--ink-soft);
+    font-weight:600;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; transition-duration:0.001ms !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div class="brand">
+      <span class="eyebrow">Вежбање</span>
+      <h1>Математика до 100</h1>
+    </div>
+    <div class="streak">
+      <span class="flame">🔥</span>
+      <span id="streakCount">0</span>
+    </div>
+  </div>
+
+  <div class="mode-switch" id="modeSwitch">
+    <button class="mode-btn" data-mode="add">Сабирање</button>
+    <button class="mode-btn" data-mode="sub">Одузимање</button>
+    <button class="mode-btn active" data-mode="mixed">Мешовито</button>
+    <button class="mode-btn" data-mode="text">Писани задаци</button>
+  </div>
+
+  <div class="card">
+    <div class="problem" id="equationRow">
+      <span id="opA">--</span>
+      <span class="op" id="opSym">+</span>
+      <span id="opB">--</span>
+      <span class="eq">=</span>
+    </div>
+    <p class="word-text hidden" id="wordText"></p>
+
+    <div class="stage-label hidden" id="setupLabel">Постава и решење</div>
+    <div class="setup-box hidden" id="setupBox">?</div>
+
+    <div class="answer-box" id="answerBox">?</div>
+
+    <div class="feedback" id="feedback"></div>
+    <div class="hint-row">
+      <button class="hint-btn" id="hintBtn">💡 Помоћ</button>
+      <div class="hint-text" id="hintText"></div>
+    </div>
+  </div>
+
+  <div class="op-row hidden" id="opRow">
+    <button class="key op-key" data-op="+">+</button>
+    <button class="key op-key" data-op="−">−</button>
+    <button class="key op-key" data-op="=">=</button>
+  </div>
+
+  <div class="keypad" id="keypad">
+    <button class="key" data-num="1">1</button>
+    <button class="key" data-num="2">2</button>
+    <button class="key" data-num="3">3</button>
+    <button class="key" data-num="4">4</button>
+    <button class="key" data-num="5">5</button>
+    <button class="key" data-num="6">6</button>
+    <button class="key" data-num="7">7</button>
+    <button class="key" data-num="8">8</button>
+    <button class="key" data-num="9">9</button>
+    <button class="key clear" id="clearKey">Обриши</button>
+    <button class="key" data-num="0">0</button>
+    <button class="key check" id="checkKey">Провери</button>
+  </div>
+
+  <div class="numberline-wrap">
+    <div class="numberline-label">
+      <span>Напредак</span>
+      <span><span class="score" id="scoreLabel">0</span> / 100 тачних</span>
+    </div>
+    <div class="numberline">
+      <div class="track"></div>
+      <div class="fill" id="lineFill"></div>
+      <div class="marker" id="lineMarker">0</div>
+    </div>
+    <div class="ticks">
+      <span>0</span><span>25</span><span>50</span><span>75</span><span>100</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  let currentAnswer = 0;
+  let currentA = 0;
+  let currentB = 0;
+  let currentIsAddition = true;
+  let hintUsed = false;
+  let userInput = "";
+  let streak = 0;
+  let totalCorrect = 0; // cycles 0-100, resets after reaching 100
+  let mode = "mixed"; // "add" | "sub" | "mixed" | "text"
+  let textInput = ""; // full "постава=решење" string, used only in text mode
+
+  const modeSwitch = document.getElementById('modeSwitch');
+
+  const opA = document.getElementById('opA');
+  const opB = document.getElementById('opB');
+  const opSym = document.getElementById('opSym');
+  const equationRow = document.getElementById('equationRow');
+  const wordText = document.getElementById('wordText');
+  const setupLabel = document.getElementById('setupLabel');
+  const setupBox = document.getElementById('setupBox');
+  const answerBox = document.getElementById('answerBox');
+  const opRow = document.getElementById('opRow');
+  const checkKey = document.getElementById('checkKey');
+  const feedback = document.getElementById('feedback');
+  const streakCount = document.getElementById('streakCount');
+  const scoreLabel = document.getElementById('scoreLabel');
+  const lineFill = document.getElementById('lineFill');
+  const lineMarker = document.getElementById('lineMarker');
+  const hintBtn = document.getElementById('hintBtn');
+  const hintText = document.getElementById('hintText');
+
+  function randInt(min, max){
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  const addWordTemplates = [
+    "Марко има {a} налепница. Другар му поклања још {b}. Колико налепница Марко сада има?",
+    "У возу је било {a} путника. На станици је ушло још {b}. Колико путника је сада у возу?",
+    "Ана је ујутру убрала {a} јабука, а поподне још {b}. Колико јабука је укупно убрала?",
+    "У корпи је било {a} лоптица, а бака је донела још {b}. Колико лоптица има укупно?",
+    "Продавница је имала {a} књига на полици. Стигла је нова пошиљка од {b} књига. Колико књига има сада?",
+    "Милица је на плажи сакупила {a} шкољки, а сестра јој је дала још {b}. Колико шкољки Милица укупно има?",
+    "На дрвету је седело {a} птица. Долетело је још {b} птица. Колико птица је сада на дрвету?",
+    "Учионица је имала {a} оловака у кутији. Учитељица је донела још {b} оловака. Колико оловака има укупно?",
+    "У акваријуму плива {a} рибица. Тата је купио још {b} рибица. Колико рибица сада плива у акваријуму?",
+    "Никола је сакупио {a} фудбалских сличица. Друг му је дао још {b}. Колико сличица Никола сада има?"
+  ];
+
+  const subWordTemplates = [
+    "Марко је имао {a} налепница. Поклонио је {b} другару. Колико налепница му је остало?",
+    "У возу је било {a} путника. На станици је изашло {b} путника. Колико путника је остало у возу?",
+    "Ана је имала {a} јабука. Поједела је {b} јабука. Колико јабука јој је остало?",
+    "У корпи је било {a} лоптица. Деца су узела {b} лоптица за игру. Колико лоптица је остало у корпи?",
+    "Продавница је имала {a} књига. Продато је {b} књига. Колико књига је остало на полици?",
+    "Милица је имала {a} шкољки. Изгубила је {b} шкољки на путу кући. Колико шкољки јој је остало?",
+    "На дрвету је седело {a} птица. Одлетело је {b} птица. Колико птица је остало на дрвету?",
+    "Учионица је имала {a} оловака. Ученици су позајмили {b} оловака. Колико оловака је остало?",
+    "У акваријуму је пливало {a} рибица. Неколико рибица, тачно {b}, пресељено је у нови акваријум. Колико рибица је остало?",
+    "Никола је имао {a} фудбалских сличица. Разменио је {b} сличица са другаром. Колико сличица му је остало?"
+  ];
+
+  function generateWordText(a, b, isAddition){
+    const templates = isAddition ? addWordTemplates : subWordTemplates;
+    const template = templates[randInt(0, templates.length - 1)];
+    return template.replace('{a}', a).replace('{b}', b);
+  }
+
+  function newProblem(){
+    userInput = "";
+    textInput = "";
+    answerBox.classList.remove('correct','wrong');
+    setupBox.classList.remove('correct','wrong');
+    feedback.textContent = "";
+    feedback.classList.remove('correct','wrong');
+
+    const isAddition = mode === "add" ? true : mode === "sub" ? false : Math.random() < 0.5;
+    currentIsAddition = isAddition;
+    const a = randInt(0, 100);
+    let b;
+
+    if(isAddition){
+      b = randInt(0, 100 - a);
+      currentAnswer = a + b;
+    } else {
+      b = randInt(0, a);
+      currentAnswer = a - b;
+    }
+
+    currentA = a;
+    currentB = b;
+
+    if(mode === "text"){
+      equationRow.classList.add('hidden');
+      wordText.classList.remove('hidden');
+      wordText.textContent = generateWordText(a, b, isAddition);
+    } else {
+      equationRow.classList.remove('hidden');
+      wordText.classList.add('hidden');
+      opA.textContent = a;
+      opB.textContent = b;
+      opSym.textContent = isAddition ? "+" : "−";
+    }
+
+    updateModeUI();
+
+    hintUsed = false;
+    hintBtn.disabled = false;
+    hintText.textContent = "";
+    hintText.classList.remove('show');
+  }
+
+  function updateModeUI(){
+    const isTextMode = mode === "text";
+
+    setupLabel.classList.toggle('hidden', !isTextMode);
+    setupBox.classList.toggle('hidden', !isTextMode);
+    opRow.classList.toggle('hidden', !isTextMode);
+    answerBox.classList.toggle('hidden', isTextMode);
+    checkKey.textContent = "Провери";
+
+    updateSetupBox();
+    updateAnswerBox();
+  }
+
+  function showHint(){
+    if(hintUsed) return;
+    hintUsed = true;
+    hintBtn.disabled = true;
+
+    const tens = Math.floor(currentAnswer / 10);
+    const ones = currentAnswer % 10;
+    let text;
+
+    if(currentAnswer < 10){
+      text = `Помоћ: резултат је мањи од 10.`;
+    } else if(ones === 0){
+      text = `Помоћ: резултат је округао број — има тачно ${tens} десетица.`;
+    } else {
+      text = `Помоћ: резултат има ${tens} ${tens === 1 ? 'десетицу' : 'десетица'} и ${ones} ${ones === 1 ? 'јединицу' : 'јединица'}.`;
+    }
+
+    hintText.textContent = text;
+    hintText.classList.add('show');
+  }
+
+  function updateAnswerBox(){
+    answerBox.textContent = userInput.length ? userInput : "?";
+    answerBox.classList.toggle('filled', userInput.length > 0);
+  }
+
+  function updateSetupBox(){
+    setupBox.textContent = textInput.length ? textInput : "?";
+    setupBox.classList.toggle('filled', textInput.length > 0);
+  }
+
+  function updateProgress(){
+    scoreLabel.textContent = totalCorrect;
+    streakCount.textContent = streak;
+    lineFill.style.width = totalCorrect + "%";
+    lineMarker.style.left = totalCorrect + "%";
+    lineMarker.textContent = totalCorrect;
+  }
+
+  function pressNumber(n){
+    if(mode === "text"){
+      if(textInput.length >= 12) return;
+      textInput += n;
+      updateSetupBox();
+    } else {
+      if(userInput.length >= 3) return;
+      if(userInput === "0") userInput = "";
+      userInput += n;
+      updateAnswerBox();
+    }
+  }
+
+  function pressOperator(op){
+    if(mode !== "text") return;
+    if(textInput.length >= 12) return;
+    textInput += op;
+    updateSetupBox();
+  }
+
+  function clearInput(){
+    if(mode === "text"){
+      textInput = "";
+      updateSetupBox();
+    } else {
+      userInput = "";
+      updateAnswerBox();
+    }
+  }
+
+  function normalizeSetup(str){
+    return str.replace(/\s+/g, '').replace(/-/g, '−').replace(/=+$/, '');
+  }
+
+  function checkTextAnswer(){
+    if(textInput === "") return;
+
+    const normalized = normalizeSetup(textInput);
+    const eqIndex = normalized.indexOf('=');
+
+    if(eqIndex === -1){
+      finishTextAttempt(false, "Не заборави знак = пре резултата.");
+      return;
+    }
+
+    const left = normalized.slice(0, eqIndex);
+    const rightStr = normalized.slice(eqIndex + 1);
+
+    const opChar = currentIsAddition ? "+" : "−";
+    const forward = `${currentA}${opChar}${currentB}`;
+    const reverse = currentIsAddition ? `${currentB}${opChar}${currentA}` : null;
+    const setupOk = left === forward || (reverse !== null && left === reverse);
+
+    if(!setupOk){
+      finishTextAttempt(false, "Постава није тачна, провери бројеве.");
+      return;
+    }
+
+    if(rightStr === ""){
+      finishTextAttempt(false, "Упиши и резултат после знака =.");
+      return;
+    }
+
+    const rightVal = parseInt(rightStr, 10);
+    if(rightVal === currentAnswer){
+      finishTextAttempt(true, "Тачно! Одличан посао.");
+    } else {
+      finishTextAttempt(false, "Резултат није тачан, провери рачун.");
+    }
+  }
+
+  function finishTextAttempt(correct, message){
+    feedback.textContent = message;
+    feedback.classList.toggle('correct', correct);
+    feedback.classList.toggle('wrong', !correct);
+    setupBox.classList.toggle('correct', correct);
+    setupBox.classList.toggle('wrong', !correct);
+
+    if(correct){
+      streak++;
+      totalCorrect++;
+      if(totalCorrect > 100){ totalCorrect = 0; }
+      updateProgress();
+      setTimeout(newProblem, 750);
+    } else {
+      streak = 0;
+      updateProgress();
+      setTimeout(() => {
+        setupBox.classList.remove('wrong');
+        feedback.textContent = "";
+        feedback.classList.remove('wrong');
+      }, 900);
+    }
+  }
+
+  function checkAnswer(){
+    if(userInput === "") return;
+    const given = parseInt(userInput, 10);
+
+    if(given === currentAnswer){
+      answerBox.classList.add('correct');
+      feedback.textContent = "Тачно! Одличан посао.";
+      feedback.classList.add('correct');
+      streak++;
+      totalCorrect++;
+      if(totalCorrect > 100){
+        totalCorrect = 0;
+        streak = Math.max(streak, 0);
+      }
+      updateProgress();
+      setTimeout(newProblem, 650);
+    } else {
+      answerBox.classList.add('wrong');
+      feedback.textContent = "Није тачно, покушај поново.";
+      feedback.classList.add('wrong');
+      streak = 0;
+      updateProgress();
+      setTimeout(() => {
+        userInput = "";
+        updateAnswerBox();
+        answerBox.classList.remove('wrong');
+        feedback.textContent = "";
+        feedback.classList.remove('wrong');
+      }, 700);
+    }
+  }
+
+  modeSwitch.addEventListener('click', (e) => {
+    const btn = e.target.closest('.mode-btn');
+    if(!btn) return;
+    mode = btn.getAttribute('data-mode');
+    modeSwitch.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    newProblem();
+  });
+
+  hintBtn.addEventListener('click', showHint);
+
+  opRow.addEventListener('click', (e) => {
+    const btn = e.target.closest('.op-key');
+    if(!btn) return;
+    pressOperator(btn.getAttribute('data-op'));
+  });
+
+  document.getElementById('keypad').addEventListener('click', (e) => {
+    const btn = e.target.closest('.key');
+    if(!btn) return;
+    if(btn.id === 'clearKey'){ clearInput(); return; }
+    if(btn.id === 'checkKey'){ mode === 'text' ? checkTextAnswer() : checkAnswer(); return; }
+    const num = btn.getAttribute('data-num');
+    if(num !== null) pressNumber(num);
+  });
+
+  // Fizička tastatura (za testiranje na desktopu)
+  document.addEventListener('keydown', (e) => {
+    if(e.key >= '0' && e.key <= '9'){ pressNumber(e.key); return; }
+    if(mode === 'text' && (e.key === '+' || e.key === '-')){ pressOperator(e.key === '-' ? '−' : '+'); return; }
+    if(mode === 'text' && e.key === '='){ pressOperator('='); return; }
+    if(e.key === 'Backspace'){
+      if(mode === 'text'){ textInput = textInput.slice(0, -1); updateSetupBox(); }
+      else { userInput = userInput.slice(0, -1); updateAnswerBox(); }
+      return;
+    }
+    if(e.key === 'Enter'){ mode === 'text' ? checkTextAnswer() : checkAnswer(); }
+  });
+
+  newProblem();
+  updateProgress();
+</script>
+
+</body>
+</html>
