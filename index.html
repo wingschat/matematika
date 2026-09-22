@@ -501,10 +501,8 @@
     </div>
     <p class="word-text hidden" id="wordText"></p>
 
-    <div class="stage-label hidden" id="setupLabel">Постава и решење</div>
-    <div class="setup-box hidden" id="setupBox">?</div>
-
-    <div class="answer-box" id="answerBox">?</div>
+    <div class="stage-label" id="setupLabel">Постава и решење</div>
+    <div class="setup-box" id="setupBox">?</div>
 
     <div class="feedback" id="feedback"></div>
     <div class="hint-row">
@@ -513,7 +511,7 @@
     </div>
   </div>
 
-  <div class="op-row hidden" id="opRow">
+  <div class="op-row" id="opRow">
     <button class="key op-key" data-op="+">+</button>
     <button class="key op-key" data-op="−">−</button>
     <button class="key op-key" data-op="=">=</button>
@@ -557,11 +555,10 @@
   let currentB = 0;
   let currentIsAddition = true;
   let hintUsed = false;
-  let userInput = "";
   let streak = 0;
   let totalCorrect = 0; // cycles 0-100, resets after reaching 100
   let mode = "mixed"; // "add" | "sub" | "mixed" | "text"
-  let textInput = ""; // full "постава=решење" string, used only in text mode
+  let textInput = ""; // puni unos "постава=решење" за све режиме
 
   const modeSwitch = document.getElementById('modeSwitch');
 
@@ -572,7 +569,6 @@
   const wordText = document.getElementById('wordText');
   const setupLabel = document.getElementById('setupLabel');
   const setupBox = document.getElementById('setupBox');
-  const answerBox = document.getElementById('answerBox');
   const opRow = document.getElementById('opRow');
   const checkKey = document.getElementById('checkKey');
   const feedback = document.getElementById('feedback');
@@ -620,9 +616,7 @@
   }
 
   function newProblem(){
-    userInput = "";
     textInput = "";
-    answerBox.classList.remove('correct','wrong');
     setupBox.classList.remove('correct','wrong');
     feedback.textContent = "";
     feedback.classList.remove('correct','wrong');
@@ -655,25 +649,12 @@
       opSym.textContent = isAddition ? "+" : "−";
     }
 
-    updateModeUI();
+    updateSetupBox();
 
     hintUsed = false;
     hintBtn.disabled = false;
     hintText.textContent = "";
     hintText.classList.remove('show');
-  }
-
-  function updateModeUI(){
-    const isTextMode = mode === "text";
-
-    setupLabel.classList.toggle('hidden', !isTextMode);
-    setupBox.classList.toggle('hidden', !isTextMode);
-    opRow.classList.toggle('hidden', !isTextMode);
-    answerBox.classList.toggle('hidden', isTextMode);
-    checkKey.textContent = "Провери";
-
-    updateSetupBox();
-    updateAnswerBox();
   }
 
   function showHint(){
@@ -697,11 +678,6 @@
     hintText.classList.add('show');
   }
 
-  function updateAnswerBox(){
-    answerBox.textContent = userInput.length ? userInput : "?";
-    answerBox.classList.toggle('filled', userInput.length > 0);
-  }
-
   function updateSetupBox(){
     setupBox.textContent = textInput.length ? textInput : "?";
     setupBox.classList.toggle('filled', textInput.length > 0);
@@ -716,33 +692,20 @@
   }
 
   function pressNumber(n){
-    if(mode === "text"){
-      if(textInput.length >= 12) return;
-      textInput += n;
-      updateSetupBox();
-    } else {
-      if(userInput.length >= 3) return;
-      if(userInput === "0") userInput = "";
-      userInput += n;
-      updateAnswerBox();
-    }
+    if(textInput.length >= 12) return;
+    textInput += n;
+    updateSetupBox();
   }
 
   function pressOperator(op){
-    if(mode !== "text") return;
     if(textInput.length >= 12) return;
     textInput += op;
     updateSetupBox();
   }
 
   function clearInput(){
-    if(mode === "text"){
-      textInput = "";
-      updateSetupBox();
-    } else {
-      userInput = "";
-      updateAnswerBox();
-    }
+    textInput = "";
+    updateSetupBox();
   }
 
   function normalizeSetup(str){
@@ -810,38 +773,6 @@
     }
   }
 
-  function checkAnswer(){
-    if(userInput === "") return;
-    const given = parseInt(userInput, 10);
-
-    if(given === currentAnswer){
-      answerBox.classList.add('correct');
-      feedback.textContent = "Тачно! Одличан посао.";
-      feedback.classList.add('correct');
-      streak++;
-      totalCorrect++;
-      if(totalCorrect > 100){
-        totalCorrect = 0;
-        streak = Math.max(streak, 0);
-      }
-      updateProgress();
-      setTimeout(newProblem, 650);
-    } else {
-      answerBox.classList.add('wrong');
-      feedback.textContent = "Није тачно, покушај поново.";
-      feedback.classList.add('wrong');
-      streak = 0;
-      updateProgress();
-      setTimeout(() => {
-        userInput = "";
-        updateAnswerBox();
-        answerBox.classList.remove('wrong');
-        feedback.textContent = "";
-        feedback.classList.remove('wrong');
-      }, 700);
-    }
-  }
-
   modeSwitch.addEventListener('click', (e) => {
     const btn = e.target.closest('.mode-btn');
     if(!btn) return;
@@ -863,7 +794,7 @@
     const btn = e.target.closest('.key');
     if(!btn) return;
     if(btn.id === 'clearKey'){ clearInput(); return; }
-    if(btn.id === 'checkKey'){ mode === 'text' ? checkTextAnswer() : checkAnswer(); return; }
+    if(btn.id === 'checkKey'){ checkTextAnswer(); return; }
     const num = btn.getAttribute('data-num');
     if(num !== null) pressNumber(num);
   });
@@ -871,14 +802,10 @@
   // Fizička tastatura (za testiranje na desktopu)
   document.addEventListener('keydown', (e) => {
     if(e.key >= '0' && e.key <= '9'){ pressNumber(e.key); return; }
-    if(mode === 'text' && (e.key === '+' || e.key === '-')){ pressOperator(e.key === '-' ? '−' : '+'); return; }
-    if(mode === 'text' && e.key === '='){ pressOperator('='); return; }
-    if(e.key === 'Backspace'){
-      if(mode === 'text'){ textInput = textInput.slice(0, -1); updateSetupBox(); }
-      else { userInput = userInput.slice(0, -1); updateAnswerBox(); }
-      return;
-    }
-    if(e.key === 'Enter'){ mode === 'text' ? checkTextAnswer() : checkAnswer(); }
+    if(e.key === '+' || e.key === '-'){ pressOperator(e.key === '-' ? '−' : '+'); return; }
+    if(e.key === '='){ pressOperator('='); return; }
+    if(e.key === 'Backspace'){ textInput = textInput.slice(0, -1); updateSetupBox(); return; }
+    if(e.key === 'Enter'){ checkTextAnswer(); }
   });
 
   newProblem();
