@@ -187,19 +187,21 @@
   }
 
   .setup-box{
-    min-height:56px;
-    min-width:140px;
-    border-radius:16px;
-    border:2.5px solid var(--line);
+    width:100%;
+    min-height:76px;
+    border-radius:18px;
+    border:3px solid var(--line);
     display:flex;
     align-items:center;
     justify-content:center;
     font-family:'Fredoka', sans-serif;
-    font-size:24px;
+    font-size:30px;
     font-weight:600;
     color:var(--accent);
-    padding:0 16px;
+    padding:0 18px;
+    overflow-x:auto;
     white-space:nowrap;
+    box-shadow:0 3px 12px rgba(30,34,70,0.05);
     transition:border-color .15s ease, background .15s ease;
   }
 
@@ -224,14 +226,14 @@
 
   .op-row{
     display:grid;
-    grid-template-columns:repeat(3, 1fr);
-    gap:10px;
+    grid-template-columns:repeat(5, 1fr);
+    gap:8px;
     margin-bottom:2px;
   }
 
   .op-key{
     color:var(--operator);
-    font-size:24px;
+    font-size:20px;
   }
 
   .answer-box{
@@ -512,8 +514,10 @@
   </div>
 
   <div class="op-row" id="opRow">
+    <button class="key op-key" data-op="(">(</button>
     <button class="key op-key" data-op="+">+</button>
     <button class="key op-key" data-op="−">−</button>
+    <button class="key op-key" data-op=")">)</button>
     <button class="key op-key" data-op="=">=</button>
   </div>
 
@@ -692,13 +696,13 @@
   }
 
   function pressNumber(n){
-    if(textInput.length >= 12) return;
+    if(textInput.length >= 16) return;
     textInput += n;
     updateSetupBox();
   }
 
   function pressOperator(op){
-    if(textInput.length >= 12) return;
+    if(textInput.length >= 16) return;
     textInput += op;
     updateSetupBox();
   }
@@ -709,7 +713,7 @@
   }
 
   function normalizeSetup(str){
-    return str.replace(/\s+/g, '').replace(/-/g, '−').replace(/=+$/, '');
+    return str.replace(/\s+/g, '').replace(/[()]/g, '').replace(/-/g, '−').replace(/=+$/, '');
   }
 
   function checkTextAnswer(){
